@@ -65,8 +65,8 @@ namespace CollisionExample.Collisions
         /// <returns></returns>
         public static bool OffScreenBounce(BoundingCircle c, Game g, out Vector2 v)
         {
-            if (c.Center.X - c.Radius < g.GraphicsDevice.Viewport.Bounds.Left ||
-                c.Center.X + c.Radius > g.GraphicsDevice.Viewport.Bounds.Right)
+            if (c.Center.X < g.GraphicsDevice.Viewport.Bounds.Left ||
+                c.Center.X + (c.Radius * 2) > g.GraphicsDevice.Viewport.Bounds.Right)
             {
                 v = new Vector2((float)-1, 1);
                 return true;

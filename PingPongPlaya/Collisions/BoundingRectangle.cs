@@ -13,22 +13,22 @@ namespace CollisionExample.Collisions
         /// <summary>
         /// X position of BoundingRectangle
         /// </summary>
-        public float X;
+        public float X => RectangleBounds.X;
 
         /// <summary>
         /// Y position of BoundingRectangle
         /// </summary>
-        public float Y;
+        public float Y => RectangleBounds.Y;
 
         /// <summary>
         /// Height of BoundingRectangle
         /// </summary>
-        public float Width;
+        public float Width => RectangleBounds.Width;
 
         /// <summary>
         /// Width of BoundingRectangle
         /// </summary>
-        public float Height;
+        public float Height => RectangleBounds.Height;
 
         /// <summary>
         /// Left side of BoundingRectangle
@@ -51,6 +51,11 @@ namespace CollisionExample.Collisions
         public float Bottom => Y + Height;
 
         /// <summary>
+        /// Rectangle containing all information required
+        /// </summary>
+        public Rectangle RectangleBounds;
+
+        /// <summary>
         /// Constructor for BoundingRectangle with X and Y coordinates
         /// </summary>
         /// <param name="x">X-Value of rectangle</param>
@@ -59,10 +64,7 @@ namespace CollisionExample.Collisions
         /// <param name="height">Height of rectangle</param>
         public BoundingRectangle(float x, float y, float width, float height)
         {
-            X = x;
-            Y = y;
-            Width = width;
-            Height = height;
+            RectangleBounds = new Rectangle((int)x, (int)y, (int)width, (int)height);
         }
 
         /// <summary>
@@ -73,10 +75,7 @@ namespace CollisionExample.Collisions
         /// <param name="height">Height of rectangle</param>
         public BoundingRectangle(Vector2 position, float width, float height)
         {
-            X = position.X;
-            Y = position.Y;
-            Width = width;
-            Height = height;
+            RectangleBounds = new Rectangle((int)position.X, (int)position.Y, (int)width, (int)height);
         }
 
         /// <summary>

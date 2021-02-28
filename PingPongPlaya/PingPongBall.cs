@@ -10,20 +10,26 @@ namespace PingPongPlaya
 {
     public class PingPongBall
     {
+        private Vector2 GRAVITY = new Vector2(0, 2400);
+
         private const float ANIMATION_SPEED = 0.08f;
         private double animationTimer;
         private int animationFrame;
         private Vector2 position;
         private Vector2 velocity;
-        private Vector2 acceleration = new Vector2(0, 800);
         private Texture2D texture;
         private BoundingCircle bounds;
-        private Random random = new Random();
+        private int paddleHits;
 
         /// <summary>
         /// The bounding volume of the sprite
         /// </summary>
         public BoundingCircle Bounds => bounds;
+
+        /// <summary>
+        /// Counter for paddle hits
+        /// </summary>
+        public int PaddleHits => paddleHits;
 
         /// <summary>
         /// Creates a new ping pong ball
@@ -33,6 +39,17 @@ namespace PingPongPlaya
         {
             this.position = position;
             this.bounds = new BoundingCircle(position + new Vector2(32, 32), 32);
+        }
+
+        /// <summary>
+        /// Resets the ping pong ball
+        /// </summary>
+        /// <param name="position"></param>
+        public void Reset(Vector2 position)
+        {
+            this.position = position;
+            velocity = Vector2.Zero;
+            paddleHits = 0;
         }
 
         /// <summary>
@@ -52,7 +69,7 @@ namespace PingPongPlaya
         {
             float t = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-            velocity += acceleration * t;
+            velocity += GRAVITY * t;
             position += velocity * t;
             bounds.Center = position;
         }
@@ -79,7 +96,7 @@ namespace PingPongPlaya
 
         public void HitSide(Game g)
         {
-            if (position.X <= 0)
+            if (position.X <= 32)
             {
                 position.X = 1;
             }
@@ -87,15 +104,14 @@ namespace PingPongPlaya
             {
                 position.X = g.GraphicsDevice.Viewport.Width - 65;
             }
-            velocity *= new Vector2(-1, 1);
+            velocity.X *= -1;
         }
 
-        public void HitPaddle()
+        public void HitPaddle(Vector2 paddleVelocity)
         {
-            int x = random.Next(200);
-            if (random.Next(1) == 0) x *= -1;
-
-            velocity = new Vector2(x, -600);
+            paddleHits++;
+            position += new Vector2(0, paddleVelocity.Y);
+            velocity = new Vector2(paddleVelocity.X * 5, -1100);
         }
     }
 }
