@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.Xna.Framework;
+using PingPongPlaya.StateManagement;
 
-namespace CollisionExample.Collisions
+namespace PingPongPlaya.Collisions
 {
     public static class CollisionHelper
     {
@@ -60,18 +61,18 @@ namespace CollisionExample.Collisions
         /// Detects if a circle has gone left, right, or below the viewport and provides a new direction for the circle
         /// </summary>
         /// <param name="c">Circle to check</param>
-        /// <param name="g">Game to reference for viewport</param>
+        /// <param name="g">GameScreen to reference for viewport</param>
         /// <param name="v">Output vector for new circle direction</param>
         /// <returns></returns>
-        public static bool OffScreenBounce(BoundingCircle c, Game g, out Vector2 v)
+        public static bool OffScreenBounce(BoundingCircle c, GameScreen g, out Vector2 v)
         {
-            if (c.Center.X < g.GraphicsDevice.Viewport.Bounds.Left ||
-                c.Center.X + (c.Radius * 2) > g.GraphicsDevice.Viewport.Bounds.Right)
+            if (c.Center.X < g.ScreenManager.GraphicsDevice.Viewport.Bounds.Left ||
+                c.Center.X + (c.Radius * 2) > g.ScreenManager.GraphicsDevice.Viewport.Bounds.Right)
             {
                 v = new Vector2((float)-1, 1);
                 return true;
             }
-            if (c.Center.Y + c.Radius > g.GraphicsDevice.Viewport.Bounds.Bottom)
+            if (c.Center.Y + c.Radius > g.ScreenManager.GraphicsDevice.Viewport.Bounds.Bottom)
             {
                 v = new Vector2(0, 0);
                 return true;

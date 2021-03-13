@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using CollisionExample.Collisions;
+using PingPongPlaya.Collisions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using PingPongPlaya.StateManagement;
 
-namespace PingPongPlaya
+namespace PingPongPlaya.Objects
 {
     public class PingPongBall
     {
@@ -94,7 +95,7 @@ namespace PingPongPlaya
             spriteBatch.Draw(texture, position, source, Color.White);
         }
 
-        public void HitSide(Game g)
+        public void HitSide(GameScreen g)
         {
             if (position.X <= 32)
             {
@@ -102,7 +103,7 @@ namespace PingPongPlaya
             }
             else
             {
-                position.X = g.GraphicsDevice.Viewport.Width - 65;
+                position.X = g.ScreenManager.GraphicsDevice.Viewport.Width - 65;
             }
             velocity.X *= -1;
         }

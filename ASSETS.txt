@@ -1,5 +1,13 @@
 ﻿Content/paddle.png - created by Nicholas Dreyer, released under public domain
+Content/paddle_bottom.png - created by Nicholas Dreyer, released under public domain
 Content/ping_pong_ball.png - created by Nicholas Dreyer, released under public domain
 Content/BallSounds/pong1.wav - created by Nicholas Dreyer, released under public domain
 Content/BallSounds/pong2.wav - created by Nicholas Dreyer, released under public domain
 Content/BallSounds/pong3.wav - created by Nicholas Dreyer, released under public domain
+Content/wind.png - created by Nicholas Dreyer, released under public domain
+Content/background.png - created by Nicholas Dreyer, released under public domain
+
+Content/blank.png - created by MonoGame port of the XNA Game State Management Sample, released under the MIT License, https://github.com/tomizechsterson/game-state-management-monogame
+Content/gradient.png - created by MonoGame port of the XNA Game State Management Sample, released under the MIT License, https://github.com/tomizechsterson/game-state-management-monogame
+
+Content/Bangers/Bangers-Regular.ttf - Bangers font created by Vernon Adams, released on Google Fonts (https://fonts.google.com/specimen/Bangers) under the Open Font License

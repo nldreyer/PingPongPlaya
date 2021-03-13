@@ -7,7 +7,7 @@ namespace PingPongPlaya
         [STAThread]
         static void Main()
         {
-            using (var game = new PingPongPlayaGame())
+            using (var game = new PingPongPlaya())
                 game.Run();
         }
     }

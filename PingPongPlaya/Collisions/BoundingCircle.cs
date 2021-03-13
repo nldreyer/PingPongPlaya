@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.Xna.Framework;
+using PingPongPlaya.StateManagement;
 
-namespace CollisionExample.Collisions
+namespace PingPongPlaya.Collisions
 {
     /// <summary>
     /// A struct representing circular bounds
@@ -51,7 +52,7 @@ namespace CollisionExample.Collisions
             return CollisionHelper.Collides(this, other);
         }
 
-        public bool OffScreenBounce(Game g, out Vector2 v)
+        public bool OffScreenBounce(GameScreen g, out Vector2 v)
         {
             bool Bool = CollisionHelper.OffScreenBounce(this, g, out Vector2 temp);
             v = temp;

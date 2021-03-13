@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.Xna.Framework;
 
-namespace CollisionExample.Collisions
+namespace PingPongPlaya.Collisions
 {
     /// <summary>
     /// A bounding rectangle for collision detection
