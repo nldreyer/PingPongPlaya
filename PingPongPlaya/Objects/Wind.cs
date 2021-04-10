@@ -1,10 +1,12 @@
-﻿using PingPongPlaya.Collisions;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using tainicom.Aether.Physics2D.Dynamics;
+using tainicom.Aether.Physics2D.Dynamics.Contacts;
 
 namespace PingPongPlaya.Objects
 {
@@ -14,16 +16,43 @@ namespace PingPongPlaya.Objects
         private double animationTimer;
         private int animationFrame;
 
+        private Random random = new Random();
+
         private Texture2D texture;
         private Vector2 position;
         private Vector2 velocity;
-        private BoundingRectangle bounds;
-        private Random random;
+        private Body body;
+        private SoundEffect windSound;
 
-        /// <summary>
-        /// The bounding volume of the sprite
-        /// </summary>
-        public BoundingRectangle Bounds => bounds;
+        public Wind(Body body, int width)
+        {
+            this.body = body;
+            this.body.OnCollision += OnCollision;
+            if (random.Next(2) == 1)
+            {
+                body.Position = new Vector2(-32, random.Next(20, 350));
+                velocity = new Vector2(35, 0);
+            }
+            else
+            {
+                body.Position = new Vector2(width, random.Next(20, 350));
+                velocity = new Vector2(-35, 0);
+            }
+        }
+
+        private bool OnCollision(Fixture sender, Fixture other, Contact contact)
+        {
+            windSound.Play();
+            return true;
+        }
+
+        public void Update(GameTime gameTime)
+        {
+            float t = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+            body.Position += velocity * t;
+            position = body.Position;
+        }
 
         /// <summary>
         /// Loads the sprite texture using the provided ContentManager
@@ -32,19 +61,7 @@ namespace PingPongPlaya.Objects
         public void LoadContent(ContentManager content)
         {
             texture = content.Load<Texture2D>("wind");
-            bounds = new BoundingRectangle(new Vector2(0, 0), 32, 16);
-            position = new Vector2(200,200);
-        }
-
-        /// <summary>
-        /// Updates the sprite
-        /// </summary>
-        /// <param name="gameTime">The GameTime object</param>
-        public void Update(GameTime gameTime)
-        {
-            position += velocity;
-            bounds.RectangleBounds.X = (int)position.X - 32;
-            bounds.RectangleBounds.Y = (int)position.Y;
+            windSound = content.Load<SoundEffect>("WindSounds/wind1");
         }
 
         /// <summary>

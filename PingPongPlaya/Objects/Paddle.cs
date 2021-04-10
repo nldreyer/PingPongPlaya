@@ -1,11 +1,11 @@
-﻿using PingPongPlaya.Collisions;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using tainicom.Aether.Physics2D.Dynamics;
 
 namespace PingPongPlaya.Objects
 {
@@ -13,30 +13,24 @@ namespace PingPongPlaya.Objects
     {
         private Texture2D texture;
         private Texture2D paddleBottom;
-        private Vector2 position;
-        private BoundingRectangle bounds;
         private MouseState currentMouseState;
         private MouseState priorMouseState;
 
-        /// <summary>
-        /// The bounding volume of the sprite
-        /// </summary>
-        public BoundingRectangle Bounds => bounds;
+        private Body body;
+
+        public Paddle(Body body)
+        {
+            this.body = body;
+        }
 
         /// <summary>
-        /// Current instantaneous velocity
-        /// </summary>
-        public Vector2 Velocity;
-
-        /// <summary>
-        /// Loads the sprite texture using the provided ContentManager
+        /// Loads the sprite textures using the provided ContentManager
         /// </summary>
         /// <param name="content">The ContentManager to load with</param>
         public void LoadContent(ContentManager content)
         {
             texture = content.Load<Texture2D>("paddle");
             paddleBottom = content.Load<Texture2D>("paddle_bottom");
-            bounds = new BoundingRectangle(new Vector2(0,0), 256, 32);
         }
 
         /// <summary>
@@ -47,10 +41,9 @@ namespace PingPongPlaya.Objects
         {
             priorMouseState = currentMouseState;
             currentMouseState = Mouse.GetState();
-            Velocity = new Vector2(currentMouseState.X - priorMouseState.X, currentMouseState.Y - priorMouseState.Y);
-            position = new Vector2(currentMouseState.X - 128, currentMouseState.Y - 16);
-            bounds.RectangleBounds.X = (int)position.X - 32;
-            bounds.RectangleBounds.Y = (int)position.Y;
+            body.Position = new Vector2(currentMouseState.X, currentMouseState.Y);
+            body.LinearVelocity = new Vector2(currentMouseState.Position.X - priorMouseState.Position.X,
+                                              currentMouseState.Position.Y - priorMouseState.Position.Y);
         }
 
         /// <summary>
@@ -60,8 +53,8 @@ namespace PingPongPlaya.Objects
         /// <param name="spriteBatch">The spritebatch to render with</param>
         public void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(texture, position, null, Color.White);
-            spriteBatch.Draw(paddleBottom, new Vector2(position.X + 112, position.Y), null, Color.White);
+            spriteBatch.Draw(texture, new Vector2(body.Position.X - 128, body.Position.Y - 16), null, Color.White);
+            spriteBatch.Draw(paddleBottom, new Vector2(body.Position.X - 16, body.Position.Y - 16), null, Color.White);
         }
     }
 }

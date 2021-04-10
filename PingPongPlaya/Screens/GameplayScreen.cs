@@ -7,25 +7,26 @@ using PingPongPlaya;
 using PingPongPlaya.Objects;
 using PingPongPlaya.StateManagement;
 using Microsoft.Xna.Framework.Content;
+using tainicom.Aether.Physics2D.Dynamics;
 
 namespace PingPongPlaya.Screens
 {
     public class GameplayScreen : GameScreen
     {
         private ContentManager _content;
+        private World world;
+        private int worldBottom;
 
         private float _pauseAlpha;
 
         private SpriteBatch spriteBatch;
-        private SoundEffect[] ballBounces;
-        //private SoundEffect windSound;
-        private Random random = new Random();
         private SpriteFont bangers;
         private SpriteFont bangersSmall;
 
         private PingPongBall pingPongBall;
         private Paddle paddle;
-        //private Wind wind;
+        private Wind[] winds;
+        private Wind wind;
         private TimeSpan currentTime;
         private TimeSpan highScoreTime;
 
@@ -42,21 +43,49 @@ namespace PingPongPlaya.Screens
         {
             if (_content == null) _content = new ContentManager(ScreenManager.Game.Services, "Content");
 
-            pingPongBall = new PingPongBall(new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2, ScreenManager.GraphicsDevice.Viewport.Height / 2 - 128));
-            paddle = new Paddle();
-            //wind = new Wind();
-            ballBounces = new SoundEffect[3];
-            ballBounces[0] = _content.Load<SoundEffect>("BallSounds/pong1");
-            ballBounces[1] = _content.Load<SoundEffect>("BallSounds/pong2");
-            ballBounces[2] = _content.Load<SoundEffect>("BallSounds/pong3");
-            //windSound = _content.Load<SoundEffect>("WindSounds/wind1");
+            world = new World();
+            world.Gravity = new Vector2(0, 400); // Not sure why this does not affect the ball very much. Ball seems to have an extremely low terminal velocity? Need to edit dependency source code?
+            worldBottom = ScreenManager.GraphicsDevice.Viewport.Height;
+
+            var top = int.MinValue;
+            var left = 0;
+            var bottom = int.MaxValue;
+            var right = ScreenManager.GraphicsDevice.Viewport.Width;
+            var edges = new Body[] {
+                world.CreateEdge(new Vector2(left, top), new Vector2(left, bottom)),
+                world.CreateEdge(new Vector2(right, top), new Vector2(right, bottom))
+            };
+
+            foreach (var edge in edges)
+            {
+                edge.BodyType = BodyType.Static;
+                edge.SetRestitution(1);
+            }
+
+            var ballBody = world.CreateCircle(32, 0.25f, new Vector2(right / 2, worldBottom / 2 - 128), BodyType.Dynamic);
+            ballBody.IsBullet = true;
+            ballBody.SetRestitution(10);
+
+            var paddleBody = world.CreateRectangle(256, 8, 1f, default, 0, BodyType.Kinematic);
+            paddleBody.IsBullet = true;
+            paddleBody.SetFriction(10);
+            paddleBody.SetRestitution(50);
+
+            pingPongBall = new PingPongBall(ballBody);
+            paddle = new Paddle(paddleBody);
+
+            var windBody = world.CreateRectangle(32, 16, 1f);
+            windBody.SetRestitution(50);
+            windBody.IgnoreGravity = true;
+
+            wind = new Wind(windBody, right);
             bangers = _content.Load<SpriteFont>("bangers");
             bangersSmall = _content.Load<SpriteFont>("bangersSmall");
             currentTime = new TimeSpan(0, 0, 0);
 
             pingPongBall.LoadContent(_content);
             paddle.LoadContent(_content);
-            //wind.LoadContent(_content);
+            wind.LoadContent(_content);
 
             ScreenManager.Game.ResetElapsedTime();
         }
@@ -83,27 +112,15 @@ namespace PingPongPlaya.Screens
 
             currentTime += gameTime.ElapsedGameTime;
 
-            if (pingPongBall.Bounds.CollidesWith(paddle.Bounds))
+            if (pingPongBall.BelowScreen(worldBottom))
             {
-                pingPongBall.HitPaddle(paddle.Velocity);
-                ballBounces[random.Next(3)].Play();
-            }
-            if (pingPongBall.Bounds.OffScreenBounce(this, out Vector2 redirect))
-            {
-                if (redirect.X == -1)
-                {
-                    pingPongBall.HitSide(this);
-                }
-                else if (redirect.X == 0)
-                {
-                    if (currentTime > highScoreTime) highScoreTime = currentTime;
-                    ScreenManager.RemoveAddScreen(this, new LostMenuScreen(highScoreTime), null);
-                }
+                ScreenManager.RemoveAddScreen(this, new LostMenuScreen(highScoreTime), null);
             }
 
-            pingPongBall.Update(gameTime);
+            world.Step((float)gameTime.ElapsedGameTime.TotalSeconds);
+
             paddle.Update(gameTime);
-            //wind.Update(gameTime);
+            wind.Update(gameTime);
         }
 
         public override void Draw(GameTime gameTime)
@@ -116,7 +133,7 @@ namespace PingPongPlaya.Screens
 
             pingPongBall.Draw(gameTime, spriteBatch);
             paddle.Draw(gameTime, spriteBatch);
-            //wind.Draw(gameTime, spriteBatch);
+            wind.Draw(gameTime, spriteBatch);
 
             float hitHeight = bangers.MeasureString("Hits").Y;
             Vector2 highScoreSize = bangers.MeasureString($"High Score: {highScoreTime:hh\\:mm\\:ss}");

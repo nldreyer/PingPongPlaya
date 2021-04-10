@@ -1,31 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using PingPongPlaya.Collisions;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using PingPongPlaya.StateManagement;
+using tainicom.Aether.Physics2D.Common;
+using tainicom.Aether.Physics2D.Dynamics;
+using tainicom.Aether.Physics2D.Dynamics.Contacts;
 
 namespace PingPongPlaya.Objects
 {
     public class PingPongBall
     {
-        private Vector2 GRAVITY = new Vector2(0, 2400);
-
         private const float ANIMATION_SPEED = 0.08f;
         private double animationTimer;
         private int animationFrame;
-        private Vector2 position;
-        private Vector2 velocity;
-        private Texture2D texture;
-        private BoundingCircle bounds;
-        private int paddleHits;
 
-        /// <summary>
-        /// The bounding volume of the sprite
-        /// </summary>
-        public BoundingCircle Bounds => bounds;
+        private Random random = new Random();
+
+        private Vector2 origin;
+        private Texture2D texture;
+        private int paddleHits;
+        private Body body;
+        private World world;
+        private SoundEffect[] ballBounces;
 
         /// <summary>
         /// Counter for paddle hits
@@ -36,21 +36,22 @@ namespace PingPongPlaya.Objects
         /// Creates a new ping pong ball
         /// </summary>
         /// <param name="position">The position of the sprite in the game</param>
-        public PingPongBall(Vector2 position)
+        public PingPongBall(Body body)
         {
-            this.position = position;
-            this.bounds = new BoundingCircle(position + new Vector2(32, 32), 32);
+            this.body = body;
+            this.origin = new Vector2(32, 32);
+            this.body.OnCollision += OnCollision;
+            this.world = body.World;
         }
 
-        /// <summary>
-        /// Resets the ping pong ball
-        /// </summary>
-        /// <param name="position"></param>
-        public void Reset(Vector2 position)
+        private bool OnCollision(Fixture sender, Fixture other, Contact contact)
         {
-            this.position = position;
-            velocity = Vector2.Zero;
-            paddleHits = 0;
+            paddleHits++;
+            Vector2 normal;
+            body.ContactList.Contact.GetWorldManifold(out normal, out FixedArray2<Vector2> points);
+            body.ApplyLinearImpulse(normal * -10000);
+            ballBounces[random.Next(3)].Play();
+            return true;
         }
 
         /// <summary>
@@ -60,19 +61,11 @@ namespace PingPongPlaya.Objects
         public void LoadContent(ContentManager content)
         {
             texture = content.Load<Texture2D>("ping_pong_ball");
-        }
 
-        /// <summary>
-        /// Updates the paddle
-        /// </summary>
-        /// <param name="gameTime">An object representing time in the game</param>
-        public void Update(GameTime gameTime)
-        {
-            float t = (float)gameTime.ElapsedGameTime.TotalSeconds;
-
-            velocity += GRAVITY * t;
-            position += velocity * t;
-            bounds.Center = position;
+            ballBounces = new SoundEffect[3];
+            ballBounces[0] = content.Load<SoundEffect>("BallSounds/pong1");
+            ballBounces[1] = content.Load<SoundEffect>("BallSounds/pong2");
+            ballBounces[2] = content.Load<SoundEffect>("BallSounds/pong3");
         }
 
         /// <summary>
@@ -92,27 +85,16 @@ namespace PingPongPlaya.Objects
             }
 
             var source = new Rectangle(animationFrame * 64, 0, 64, 64);
-            spriteBatch.Draw(texture, position, source, Color.White);
+            spriteBatch.Draw(texture, body.Position, source, Color.White, body.Rotation, origin, 1f, SpriteEffects.None, 0);
         }
 
-        public void HitSide(GameScreen g)
+        public bool BelowScreen(int bottom)
         {
-            if (position.X <= 32)
+            if (body.Position.Y > bottom)
             {
-                position.X = 1;
+                return true;
             }
-            else
-            {
-                position.X = g.ScreenManager.GraphicsDevice.Viewport.Width - 65;
-            }
-            velocity.X *= -1;
-        }
-
-        public void HitPaddle(Vector2 paddleVelocity)
-        {
-            paddleHits++;
-            position += new Vector2(0, paddleVelocity.Y);
-            velocity = new Vector2(paddleVelocity.X * 5, -1100);
+            else return false;
         }
     }
 }
