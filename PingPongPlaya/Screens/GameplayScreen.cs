@@ -8,6 +8,7 @@ using PingPongPlaya.Objects;
 using PingPongPlaya.StateManagement;
 using Microsoft.Xna.Framework.Content;
 using tainicom.Aether.Physics2D.Dynamics;
+using System.Collections.Generic;
 
 namespace PingPongPlaya.Screens
 {
@@ -25,10 +26,10 @@ namespace PingPongPlaya.Screens
 
         private PingPongBall pingPongBall;
         private Paddle paddle;
-        private Wind[] winds;
-        private Wind wind;
+        private List<Wind> winds = new List<Wind>();
         private TimeSpan currentTime;
         private TimeSpan highScoreTime;
+        private TimeSpan spawnWind;
 
         public GameplayScreen(TimeSpan? highScoreTime)
         {
@@ -36,7 +37,11 @@ namespace PingPongPlaya.Screens
             TransitionOffTime = TimeSpan.FromSeconds(0.5);
 
             if (highScoreTime.HasValue) this.highScoreTime = (TimeSpan)highScoreTime;
-            else highScoreTime = new TimeSpan(0, 0, 0);
+            else this.highScoreTime = new TimeSpan(0, 0, 0);
+
+            spawnWind = DateTime.Now.TimeOfDay.Add(new TimeSpan(0,0,4));
+
+
         }
 
         public override void Activate()
@@ -65,29 +70,28 @@ namespace PingPongPlaya.Screens
             var ballBody = world.CreateCircle(32, 0.25f, new Vector2(right / 2, worldBottom / 2 - 128), BodyType.Dynamic);
             ballBody.IsBullet = true;
             ballBody.SetRestitution(10);
+            ballBody.SetCollisionGroup(1);
 
             var paddleBody = world.CreateRectangle(256, 8, 1f, default, 0, BodyType.Kinematic);
             paddleBody.IsBullet = true;
             paddleBody.SetFriction(10);
             paddleBody.SetRestitution(50);
+            paddleBody.SetCollisionGroup(1);
 
             pingPongBall = new PingPongBall(ballBody);
             paddle = new Paddle(paddleBody);
-
-            var windBody = world.CreateRectangle(32, 16, 1f);
-            windBody.SetRestitution(50);
-            windBody.IgnoreGravity = true;
-
-            wind = new Wind(windBody, right);
+            createWind();
+            
             bangers = _content.Load<SpriteFont>("bangers");
             bangersSmall = _content.Load<SpriteFont>("bangersSmall");
             currentTime = new TimeSpan(0, 0, 0);
 
             pingPongBall.LoadContent(_content);
             paddle.LoadContent(_content);
-            wind.LoadContent(_content);
 
             ScreenManager.Game.ResetElapsedTime();
+
+            Mouse.SetPosition(right / 2, ScreenManager.GraphicsDevice.Viewport.Height - 128);
         }
 
         public override void Deactivate()
@@ -98,6 +102,19 @@ namespace PingPongPlaya.Screens
         public override void Unload()
         {
             base.Unload();
+        }
+
+        private void createWind()
+        {
+            var windBody = world.CreateRectangle(48, 16, 1f);
+            windBody.SetRestitution(50);
+            windBody.IgnoreGravity = true;
+            windBody.SetCollisionGroup(2);
+
+            Wind wind = new Wind(windBody, ScreenManager.GraphicsDevice.Viewport.Width);
+            wind.LoadContent(_content);
+
+            winds.Add(wind);
         }
 
         public override void Update(GameTime gameTime, bool otherScreenHasFocus, bool coveredByOtherScreen)
@@ -114,13 +131,22 @@ namespace PingPongPlaya.Screens
 
             if (pingPongBall.BelowScreen(worldBottom))
             {
-                ScreenManager.RemoveAddScreen(this, new LostMenuScreen(highScoreTime), null);
+                ScreenManager.RemoveAddScreen(this, new LostMenuScreen(currentTime), null);
+            }
+
+            if (spawnWind < DateTime.Now.TimeOfDay)
+            {
+                createWind();
+                spawnWind += new TimeSpan(0, 0, 4);
             }
 
             world.Step((float)gameTime.ElapsedGameTime.TotalSeconds);
 
             paddle.Update(gameTime);
-            wind.Update(gameTime);
+            foreach (Wind wind in winds)
+            {
+                wind.Update(gameTime);
+            }
         }
 
         public override void Draw(GameTime gameTime)
@@ -133,7 +159,10 @@ namespace PingPongPlaya.Screens
 
             pingPongBall.Draw(gameTime, spriteBatch);
             paddle.Draw(gameTime, spriteBatch);
-            wind.Draw(gameTime, spriteBatch);
+            foreach (Wind wind in winds)
+            {
+                wind.Draw(gameTime, spriteBatch);
+            }
 
             float hitHeight = bangers.MeasureString("Hits").Y;
             Vector2 highScoreSize = bangers.MeasureString($"High Score: {highScoreTime:hh\\:mm\\:ss}");

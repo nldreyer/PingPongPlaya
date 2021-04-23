@@ -46,11 +46,11 @@ namespace PingPongPlaya.Objects
 
         private bool OnCollision(Fixture sender, Fixture other, Contact contact)
         {
-            paddleHits++;
+            if (other.CollisionGroup == 1) paddleHits++;
+            if (other.CollisionGroup != 2) ballBounces[random.Next(3)].Play();
             Vector2 normal;
             body.ContactList.Contact.GetWorldManifold(out normal, out FixedArray2<Vector2> points);
             body.ApplyLinearImpulse(normal * -10000);
-            ballBounces[random.Next(3)].Play();
             return true;
         }
 

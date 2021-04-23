@@ -23,19 +23,21 @@ namespace PingPongPlaya.Objects
         private Vector2 velocity;
         private Body body;
         private SoundEffect windSound;
+        private bool DirectionRight;
 
         public Wind(Body body, int width)
         {
             this.body = body;
             this.body.OnCollision += OnCollision;
-            if (random.Next(2) == 1)
+            if (random.Next(2) == 1) DirectionRight = true;
+            if (DirectionRight)
             {
-                body.Position = new Vector2(-32, random.Next(20, 350));
+                body.Position = new Vector2(-32, random.Next(20, 500));
                 velocity = new Vector2(35, 0);
             }
             else
             {
-                body.Position = new Vector2(width, random.Next(20, 350));
+                body.Position = new Vector2(width, random.Next(20, 500));
                 velocity = new Vector2(-35, 0);
             }
         }
@@ -51,7 +53,7 @@ namespace PingPongPlaya.Objects
             float t = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
             body.Position += velocity * t;
-            position = body.Position;
+            position = body.Position - new Vector2(16,8);
         }
 
         /// <summary>
@@ -81,7 +83,8 @@ namespace PingPongPlaya.Objects
             }
 
             var source = new Rectangle(animationFrame * 32, 8, 32, 16);
-            spriteBatch.Draw(texture, position, source, Color.White);
+            if (!DirectionRight) spriteBatch.Draw(texture, position, source, Color.White, 0, Vector2.Zero, 1.5f, SpriteEffects.None, 1);
+            else spriteBatch.Draw(texture, position, source, Color.White, 0, Vector2.Zero, 1.5f, SpriteEffects.FlipHorizontally, 1);
         }
     }
 }

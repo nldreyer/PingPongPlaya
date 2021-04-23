@@ -28,7 +28,7 @@ namespace PingPongPlaya.Screens
             _loadingIsSlow = loadingIsSlow;
             _screensToLoad = screensToLoad;
 
-            TransitionOnTime = TimeSpan.FromSeconds(0.5);
+            TransitionOnTime = TimeSpan.FromSeconds(4);
         }
 
         // Activates the loading screen.
@@ -90,18 +90,24 @@ namespace PingPongPlaya.Screens
                 var font = ScreenManager.Font;
 
                 const string message = "Loading...";
+                const string instructions = "Keep the ball in the air as long as you can!\nMove your mouse to control the paddle.";
 
                 // Center the text in the viewport.
                 var viewport = ScreenManager.GraphicsDevice.Viewport;
                 var viewportSize = new Vector2(viewport.Width, viewport.Height);
-                var textSize = font.MeasureString(message);
-                var textPosition = (viewportSize - textSize) / 2;
+                var textSizeLoading = font.MeasureString(message);
+                var textSizeInstructions = font.MeasureString(instructions);
+                var textPositionLoading = (viewportSize - textSizeLoading) / 2;
+                textPositionLoading -= new Vector2(0, textSizeLoading.Y / 2);
+                var textPositionInstructions = (viewportSize - textSizeInstructions) / 2;
+                textPositionInstructions += new Vector2(0, textSizeLoading.Y);
 
                 var color = Color.White * TransitionAlpha;
 
                 // Draw the text.
                 spriteBatch.Begin();
-                spriteBatch.DrawString(font, message, textPosition, color);
+                spriteBatch.DrawString(font, message, textPositionLoading, color);
+                spriteBatch.DrawString(font, instructions, textPositionInstructions, color);
                 spriteBatch.End();
             }
         }
