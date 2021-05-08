@@ -12,6 +12,8 @@ namespace PingPongPlaya.Objects
 {
     public class Wind
     {
+        public Body Body => body;
+
         private const float ANIMATION_SPEED = 0.1f;
         private double animationTimer;
         private int animationFrame;

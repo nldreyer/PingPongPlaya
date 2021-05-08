@@ -1,14 +1,12 @@
 ﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
-using PingPongPlaya;
 using PingPongPlaya.Objects;
 using PingPongPlaya.StateManagement;
 using Microsoft.Xna.Framework.Content;
-using tainicom.Aether.Physics2D.Dynamics;
 using System.Collections.Generic;
+using tainicom.Aether.Physics2D.Dynamics;
 
 namespace PingPongPlaya.Screens
 {
@@ -49,33 +47,24 @@ namespace PingPongPlaya.Screens
             if (_content == null) _content = new ContentManager(ScreenManager.Game.Services, "Content");
 
             world = new World();
-            world.Gravity = new Vector2(0, 400); // Not sure why this does not affect the ball very much. Ball seems to have an extremely low terminal velocity? Need to edit dependency source code?
+            world.Gravity = new Vector2(0, 1200);
             worldBottom = ScreenManager.GraphicsDevice.Viewport.Height;
 
-            var top = int.MinValue;
             var left = 0;
-            var bottom = int.MaxValue;
+            var bottom = ScreenManager.GraphicsDevice.Viewport.Height;
             var right = ScreenManager.GraphicsDevice.Viewport.Width;
-            var edges = new Body[] {
-                world.CreateEdge(new Vector2(left, top), new Vector2(left, bottom)),
-                world.CreateEdge(new Vector2(right, top), new Vector2(right, bottom))
-            };
 
-            foreach (var edge in edges)
-            {
-                edge.BodyType = BodyType.Static;
-                edge.SetRestitution(1);
-            }
+            world.CreateRectangle(50, int.MaxValue, 1f, new Vector2(right + 25, bottom));
+            world.CreateRectangle(50, int.MaxValue, 1f, new Vector2(left - 25, bottom));
 
             var ballBody = world.CreateCircle(32, 0.25f, new Vector2(right / 2, worldBottom / 2 - 128), BodyType.Dynamic);
             ballBody.IsBullet = true;
-            ballBody.SetRestitution(10);
+            ballBody.SetRestitution(5);
             ballBody.SetCollisionGroup(1);
 
             var paddleBody = world.CreateRectangle(256, 8, 1f, default, 0, BodyType.Kinematic);
-            paddleBody.IsBullet = true;
             paddleBody.SetFriction(10);
-            paddleBody.SetRestitution(50);
+            paddleBody.SetRestitution(100);
             paddleBody.SetCollisionGroup(1);
 
             pingPongBall = new PingPongBall(ballBody);
@@ -143,10 +132,25 @@ namespace PingPongPlaya.Screens
             world.Step((float)gameTime.ElapsedGameTime.TotalSeconds);
 
             paddle.Update(gameTime);
-            foreach (Wind wind in winds)
+            for (int i = 0; i < winds.Count - 1; i++)
+            {
+                winds[i].Update(gameTime);
+                if (winds[i].Body.Tag is int t && t == 1)
+                {
+                    world.Remove(winds[i].Body);
+                    winds.Remove(winds[i]);
+                    i--;
+                }
+            }
+            /*foreach (Wind wind in winds)
             {
                 wind.Update(gameTime);
-            }
+                if (wind.Body.Tag is int t && t == 1)
+                {
+                    world.Remove(wind.Body);
+                    winds.Remove(wind);
+                }
+            }*/
         }
 
         public override void Draw(GameTime gameTime)

@@ -48,9 +48,10 @@ namespace PingPongPlaya.Objects
         {
             if (other.CollisionGroup == 1) paddleHits++;
             if (other.CollisionGroup != 2) ballBounces[random.Next(3)].Play();
-            Vector2 normal;
-            body.ContactList.Contact.GetWorldManifold(out normal, out FixedArray2<Vector2> points);
-            body.ApplyLinearImpulse(normal * -10000);
+            else other.Body.Tag = (int)1;
+            //Vector2 normal;
+            //body.ContactList.Contact.GetWorldManifold(out normal, out FixedArray2<Vector2> points);
+            //body.ApplyLinearImpulse(normal);
             return true;
         }
 
